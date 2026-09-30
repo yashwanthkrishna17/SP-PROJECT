@@ -161,7 +161,7 @@ export const SubmissionReportView: React.FC<SubmissionReportViewProps> = ({
                   SOURCE EVIDENCE ({ans.sourceReference})
                 </span>
                 <p className="text-xs text-slate-700 font-mono">
-                  "The ensemble combines predictions from multiple decision trees..."
+                  {ans.sourceReference ? "Document evidence grounded in " + ans.sourceReference : "Document section evaluating " + ans.concept}
                 </p>
               </div>
 

@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { GroundedQuestion, StudentAnswer, VivaSession, Submission } from '@/lib/types';
 import { evaluateStudentResponse, calculateDefenseScore, speakText } from '@/lib/viva-engine';
+import { generateGroundedQuestionsFromMap } from '@/lib/knowledge-map-extractor';
 import { SAMPLE_QUESTIONS_RF } from '@/lib/demo-data';
 import {
   Mic,
@@ -29,7 +30,16 @@ export const LiveVivaRoom: React.FC<LiveVivaRoomProps> = ({
   onVivaComplete,
   onCancel,
 }) => {
-  const questionsToAsk = SAMPLE_QUESTIONS_RF;
+  // Dynamically generate grounded viva questions from the submission's knowledge map!
+  const questionsToAsk = useMemo(() => {
+    if (submission?.knowledgeMap) {
+      const generated = generateGroundedQuestionsFromMap(submission.knowledgeMap);
+      if (generated && generated.length > 0) {
+        return generated;
+      }
+    }
+    return SAMPLE_QUESTIONS_RF;
+  }, [submission]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<StudentAnswer[]>([]);
@@ -43,7 +53,7 @@ export const LiveVivaRoom: React.FC<LiveVivaRoomProps> = ({
   const [soundEnabled, setSoundEnabled] = useState(true);
 
   const recognitionRef = useRef<any>(null);
-  const currentQ = questionsToAsk[currentIndex];
+  const currentQ = questionsToAsk[currentIndex] || questionsToAsk[0];
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -68,7 +78,7 @@ export const LiveVivaRoom: React.FC<LiveVivaRoomProps> = ({
     } else {
       setIsSpeakingAI(false);
     }
-  }, [currentIndex, activeFollowUp, soundEnabled]);
+  }, [currentIndex, activeFollowUp, soundEnabled, currentQ]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -112,14 +122,20 @@ export const LiveVivaRoom: React.FC<LiveVivaRoomProps> = ({
   };
 
   const handleSimulatedAnswer = (presetType: 'strong' | 'vague' | 'dont_know') => {
+    const concept = currentQ?.concept || 'this domain concept';
+    const snippet = currentQ?.paperSnippet || 'our submission methodology';
     if (presetType === 'strong') {
       setCurrentSpeechText(
-        `Based on Section 3 of my paper, combining decorrelated decision trees reduces prediction variance because individual tree errors cancel out when averaged. We set max features to sqrt(p) to enforce decorrelation.`
+        `Based on Section 2 of our submission, we addressed ${concept} through ${snippet}. This balances operational efficiency with theoretical bounds, ensuring consistent reliability during peak stress loads.`
       );
     } else if (presetType === 'vague') {
-      setCurrentSpeechText(`Because we used 100 trees and averaged them together to make predictions more stable.`);
+      setCurrentSpeechText(
+        `We implemented a standard operational approach for ${concept} to ensure the overall system remains reliable and meets baseline requirements.`
+      );
     } else {
-      setCurrentSpeechText(`I am not entirely sure about the exact mathematical formula for this hyperparameter.`);
+      setCurrentSpeechText(
+        `I understand the general concept of ${concept}, but I would need to review our exact mathematical parameters for the precise equation.`
+      );
     }
   };
 
@@ -178,8 +194,8 @@ export const LiveVivaRoom: React.FC<LiveVivaRoomProps> = ({
       studentId: submission.studentId,
       studentName: submission.studentName,
       courseName: submission.courseName,
-      startTime: new Date().toLocaleString(),
-      endTime: new Date().toLocaleString(),
+      startTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      endTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       overallScore,
       breakdown,
       integrityIndicators: indicators,
@@ -258,76 +274,76 @@ export const LiveVivaRoom: React.FC<LiveVivaRoomProps> = ({
             <div className="pt-2">
               {isListening ? (
                 <div className="flex items-center gap-2 text-xs font-semibold text-indigo-600 bg-indigo-50 p-2.5 rounded-lg border border-indigo-100">
-                  <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 animate-pulse" />
-                  <span>Listening to student voice...</span>
-                  <div className="subtle-wave ml-auto">
-                    <div className="subtle-wave-bar" />
-                    <div className="subtle-wave-bar" />
-                    <div className="subtle-wave-bar" />
-                    <div className="subtle-wave-bar" />
-                  </div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-indigo-600 animate-pulse" />
+                  <span>Listening to your oral defense...</span>
+                </div>
+              ) : isSpeakingAI ? (
+                <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 bg-emerald-50 p-2.5 rounded-lg border border-emerald-100">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
+                  <span>Examiner speaking question aloud...</span>
                 </div>
               ) : isEvaluating ? (
-                <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-slate-100 p-2.5 rounded-lg border border-slate-200">
-                  <span className="w-2 h-2 rounded-full bg-slate-500 animate-ping" />
-                  <span>Evaluating answer against paper context...</span>
+                <div className="flex items-center gap-2 text-xs font-semibold text-amber-600 bg-amber-50 p-2.5 rounded-lg border border-amber-100">
+                  <div className="w-2.5 h-2.5 rounded-full bg-amber-600 animate-spin" />
+                  <span>Evaluating answer against grounded source evidence...</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                  <span className="w-2 h-2 rounded-full bg-slate-400" />
-                  <span>Ready for answer</span>
+                <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                  <div className="w-2 h-2 rounded-full bg-slate-400" />
+                  <span>Awaiting your answer. Use voice recording or manual text.</span>
                 </div>
               )}
             </div>
           </div>
 
-          {/* RIGHT: DEFENSE PROGRESS */}
+          {/* RIGHT: STUDENT PROFILE */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+              Candidate Information
+            </span>
+
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center font-bold text-lg">
+                <User className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-900 text-base">{submission.studentName}</h3>
+                <p className="text-xs text-slate-500 font-mono">{submission.courseName}</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-1">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">
-                Defense Progress
+                Document Grounding
               </span>
-              <span className="text-xs font-mono font-bold text-slate-700">
-                Question {currentIndex + 1} of {questionsToAsk.length}
-              </span>
-            </div>
-
-            {/* Step Dots */}
-            <div className="flex items-center gap-2 pt-1">
-              {questionsToAsk.map((_, idx) => (
-                <div
-                  key={idx}
-                  className={`w-3 h-3 rounded-full transition-all ${
-                    idx < currentIndex
-                      ? 'bg-emerald-600'
-                      : idx === currentIndex
-                      ? 'bg-indigo-600 ring-2 ring-indigo-200'
-                      : 'bg-slate-200'
-                  }`}
-                />
-              ))}
-            </div>
-
-            <div className="pt-2 text-xs text-slate-600 font-mono space-y-1">
-              <p>Current concept: <strong className="text-slate-900">{currentQ?.concept}</strong></p>
-              <p>Difficulty: <strong className="text-slate-900 capitalize">{currentQ?.difficulty}</strong></p>
+              <p className="text-xs text-slate-700 font-medium">
+                📄 {submission.fileName} ({submission.fileType.toUpperCase()})
+              </p>
             </div>
           </div>
         </div>
 
-        {/* BOTTOM: QUESTION & ANSWER PANEL */}
-        <div className="p-6 space-y-6">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-mono font-bold uppercase text-indigo-600">
-                QUESTION {currentIndex + 1} &bull; {currentQ?.type.replace('_', ' ')}
+        {/* ACTIVE QUESTION PANEL */}
+        <div className="p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono font-bold uppercase text-indigo-600 tracking-wider">
+              Question {currentIndex + 1} of {questionsToAsk.length} &bull; {currentQ?.concept}
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-mono font-semibold uppercase">
+                Difficulty: {currentQ?.difficulty}
               </span>
-              <span className="text-[11px] font-mono text-slate-500">
-                Grounding: {currentQ?.sourceLocation}
+              <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[10px] font-mono font-semibold uppercase">
+                {currentQ?.type}
               </span>
             </div>
+          </div>
 
-            <h3 className="font-bold text-xl text-slate-900 leading-snug">
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <span className="text-[10px] font-bold uppercase text-slate-400 font-mono block mb-1">
+              Document Reference: {currentQ?.sourceLocation}
+            </span>
+            <h3 className="font-bold text-lg text-slate-900 leading-snug">
               "{currentQ?.question}"
             </h3>
 
@@ -347,20 +363,23 @@ export const LiveVivaRoom: React.FC<LiveVivaRoomProps> = ({
 
               {/* Test Presets */}
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] text-slate-400 font-mono">Presets:</span>
+                <span className="text-[10px] text-slate-400 font-mono">Simulate:</span>
                 <button
+                  type="button"
                   onClick={() => handleSimulatedAnswer('strong')}
                   className="text-[11px] px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-indigo-700 font-semibold"
                 >
                   Strong
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleSimulatedAnswer('vague')}
                   className="text-[11px] px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold"
                 >
                   Vague
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleSimulatedAnswer('dont_know')}
                   className="text-[11px] px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold"
                 >
