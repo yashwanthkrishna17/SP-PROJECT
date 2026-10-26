@@ -3,13 +3,13 @@
 import React from 'react';
 import { UserRole } from '@/lib/types';
 import { CURRENT_USER_STUDENT, CURRENT_USER_PROFESSOR } from '@/lib/demo-data';
-import { Shield, GraduationCap, UserCheck, Sparkles, BookOpen, Layers } from 'lucide-react';
+import { Shield, Scan, Sparkles } from 'lucide-react';
 
 interface NavbarProps {
   currentRole: UserRole;
   onRoleChange: (role: UserRole) => void;
-  activeView: 'landing' | 'dashboard' | 'viva_room' | 'results' | 'report';
-  setActiveView: (view: 'landing' | 'dashboard' | 'viva_room' | 'results' | 'report') => void;
+  activeView: 'landing' | 'dashboard' | 'viva_room' | 'results' | 'report' | 'plagiarism';
+  setActiveView: (view: 'landing' | 'dashboard' | 'viva_room' | 'results' | 'report' | 'plagiarism') => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -23,9 +23,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-slate-200 px-4 lg:px-8 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Brand Logo - Stylized Indigo Shield + Mark */}
+        {/* Brand Logo */}
         <div
-          onClick={() => setActiveView('landing')}
+          onClick={() => setActiveView('plagiarism')}
           className="flex items-center gap-2.5 cursor-pointer group"
         >
           <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm group-hover:bg-indigo-700 transition-colors">
@@ -35,8 +35,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="font-bold text-slate-900 tracking-tight text-lg">
               VivaGuard
             </span>
-            <span className="ml-2 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
-              Academic
+            <span className="ml-2 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 border border-indigo-200">
+              Plagiarism AI
             </span>
           </div>
         </div>
@@ -44,14 +44,15 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Navigation Links */}
         <nav className="flex items-center gap-1 sm:gap-2">
           <button
-            onClick={() => setActiveView('landing')}
-            className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors ${
-              activeView === 'landing'
-                ? 'bg-slate-100 text-indigo-600 font-semibold'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+            onClick={() => setActiveView('plagiarism')}
+            className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 ${
+              activeView === 'plagiarism'
+                ? 'bg-indigo-600 text-white font-semibold shadow-sm'
+                : 'text-indigo-700 bg-indigo-50 hover:bg-indigo-100 font-semibold'
             }`}
           >
-            Overview
+            <Scan className="w-3.5 h-3.5" />
+            <span>Plagiarism Detector</span>
           </button>
 
           <button
@@ -62,7 +63,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
             }`}
           >
-            {currentRole === 'student' ? 'My Oral Defenses' : 'Faculty Dashboard'}
+            {currentRole === 'student' ? 'Student Defenses' : 'Faculty Dashboard'}
+          </button>
+
+          <button
+            onClick={() => setActiveView('landing')}
+            className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors ${
+              activeView === 'landing'
+                ? 'bg-slate-100 text-indigo-600 font-semibold'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+            }`}
+          >
+            Overview
           </button>
         </nav>
 

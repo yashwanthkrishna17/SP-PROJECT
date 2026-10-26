@@ -1,294 +1,166 @@
 import { SubmissionKnowledgeMap, GroundedQuestion, DifficultyLevel, QuestionType } from './types';
 
-// Domain-specific concept and question templates to ensure rich viva coverage
-const DOMAIN_PROFILES = [
-  {
-    pattern: /airlin|flight|aviation|fleet|aircraft|airport|crew|passenger|runway|route optimization|baggage/i,
-    domain: 'Airlines & Aviation Operations',
-    defaultConcepts: [
-      'Flight Scheduling & Network Flow',
-      'Dynamic Pricing & Revenue Management',
-      'Fleet Maintenance & Turnaround SLA',
-      'Crew Rostering & Duty Regulations',
-      'Air Traffic Delay Propagation',
-      'Safety Compliance & Risk Auditing',
-    ],
-    defaultClaims: [
-      'Joint route optimization and dynamic seat pricing minimizes cascading hub delays while increasing load factor.',
-      'Integer programming heuristics improve turnaround times while adhering strictly to FAA and ICAO safety regulations.',
-    ],
-    defaultMethodology: {
-      dataset: 'Flight telemetry, passenger booking records, and historical delay archives across 45 hub airports',
-      approach: 'Multi-commodity network flow optimization combined with stochastic cancellation modeling',
-      tools: ['Integer Linear Programming (ILP)', 'Network Flow Solvers', 'Simulated Delay Injections'],
-      steps: [
-        'Fleet topology mapping and airport slot constraint analysis',
-        'Stochastic passenger demand and cancellation rate estimation',
-        'Mathematical formulation of turnaround and crew duty bounds',
-        'Stress testing against simulated severe weather disruption scenarios',
-      ],
-    },
-    defaultLimitations: [
-      'Extreme weather events and ground stop orders require manual operational dispatch intervention.',
-      'Jet fuel spot price volatility introduces cost variance not fully captured in static cost objective functions.',
-    ],
-    defaultFindings: [
-      'Turnaround SLA compliance improved by 28% across major connecting hubs.',
-      'Estimated fuel burn reduced through optimized cruising altitude and speed profile selection.',
-    ],
-  },
-  {
-    pattern: /forest|decision tree|gini|random forest|bagging|ensemble|fraud|credit|transaction/i,
-    domain: 'Ensemble Learning & Machine Learning',
-    defaultConcepts: [
-      'Random Forest Variance Reduction & Bagging',
-      'Gini Impurity vs Entropy Splitting',
-      'Feature Subspacing & Decorrelation',
-      'Out-of-Bag (OOB) Generalization Bounds',
-      'Inference Latency Optimization',
-      'Adversarial Zero-Day Vector Vulnerabilities',
-    ],
-    defaultClaims: [
-      'Bootstrap aggregation combined with random feature selection decorrelates individual decision trees and reduces estimator variance.',
-      'Ensemble classification achieves high recall on rare fraudulent transaction vectors without prohibitive latency penalties.',
-    ],
-    defaultMethodology: {
-      dataset: 'Imbalanced transaction logs comprising 500,000 labelled credit card operations',
-      approach: 'Random Forest ensemble with SMOTE data balancing and grid-searched hyperparameter tuning',
-      tools: ['Scikit-Learn', 'SMOTE Oversampling', 'Distributed Tree Evaluator'],
-      steps: [
-        'Class imbalance reweighting using synthetic minority oversampling',
-        'Recursive binary splitting based on Gini impurity minimization',
-        'Out-of-bag validation across 100 decorrelated estimator trees',
-        'Latency benchmarking on real-time stream ingestion pipelines',
-      ],
-    },
-    defaultLimitations: [
-      'Supervised tree splits fail to extrapolate beyond historical training distribution boundaries.',
-      'Feature correlation spikes in unseen zero-day attacks can degrade bagging variance reduction.',
-    ],
-    defaultFindings: [
-      'Achieved 91.4% accuracy with 93.1% sensitivity on high-risk transaction classes.',
-      'Sub-20ms inference latency sustained under concurrent batch loads.',
-    ],
-  },
-  {
-    pattern: /rag|retrieval|hallucin|vector|embedding|llm|language model|prompt/i,
-    domain: 'Retrieval-Augmented Generation & NLP',
-    defaultConcepts: [
-      'Vector Embedding Semantic Search',
-      'HNSW Approximate Nearest Neighbors',
-      'Context Window Chunking Strategies',
-      'Hallucination Entropy Bounds',
-      'Retrieval Latency Trade-offs',
-      'Citation Grounding & Faithfulness',
-    ],
-    defaultClaims: [
-      'Dense vector indexing grounds LLM generation in verified documents, reducing factual hallucination by over 80%.',
-      'Contextual re-ranking filters out irrelevant chunks prior to prompt assembly.',
-    ],
-    defaultMethodology: {
-      dataset: '200,000 peer-reviewed scientific manuscripts indexed in vector space',
-      approach: 'HNSW vector retrieval paired with cross-encoder re-ranking and prompt constraint injection',
-      tools: ['Vector Database', 'Sentence Transformers', 'Context Evaluator'],
-      steps: [
-        'Document tokenization into 512-token chunks with 54-token overlap',
-        'Dense embedding computation and HNSW index construction',
-        'Cosine similarity retrieval evaluated on benchmark query suites',
-        'Faithfulness scoring of generated answers against retrieved context',
-      ],
-    },
-    defaultLimitations: [
-      'Embedding retrieval adds ~180ms overhead to context generation pipeline.',
-      'Out-of-domain technical terminology suffers from embedding space dilution.',
-    ],
-    defaultFindings: [
-      'Hallucination rates dropped significantly compared to ungrounded base models.',
-      'Citation verification reached 94% alignment with indexed ground truth.',
-    ],
-  },
-  {
-    pattern: /crispr|genom|dna|rna|cnn|mutation|biological|cleavage|sequence/i,
-    domain: 'Computational Biology & Genomics',
-    defaultConcepts: [
-      'CRISPR-Cas9 Off-Target Binding',
-      'Deep Convolutional Sequence Modeling',
-      'PAM Position Weight Matrices',
-      'Mismatch Energetic Penalties',
-      'Genome-Wide Scan Optimization',
-      'Experimental Validation Protocols',
-    ],
-    defaultClaims: [
-      'Deep CNN architectures effectively learn non-linear energetic penalties of DNA-gRNA sequence mismatches.',
-      'Spatial convolution captures spatial nucleotide dependencies superior to traditional position weight matrices.',
-    ],
-    defaultMethodology: {
-      dataset: '50,000 verified guide RNA cleavage sequences benchmarked against in-vitro assays',
-      approach: 'Multi-layer 1D spatial convolution over one-hot encoded 23bp protospacer adjacent motif sequences',
-      tools: ['PyTorch CNN', 'Genomic Sequence Alignment', 'ROC-AUC Benchmarker'],
-      steps: [
-        'One-hot encoding of target and off-target nucleotide sequences',
-        'Kernel convolution extracting local nucleotide binding affinities',
-        'Sigmoid classification evaluating cleavage probability',
-        'Validation against GUIDE-seq experimental ground truth datasets',
-      ],
-    },
-    defaultLimitations: [
-      'Genome-wide scans require substantial compute clusters for comprehensive coverage.',
-      'Epigenetic chromatin accessibility factors are not fully captured in naked sequence models.',
-    ],
-    defaultFindings: [
-      'Achieved 94.2% ROC-AUC accuracy on benchmark off-target detection sets.',
-      'Identified critical sensitivity windows within the seed region (positions 1-8).',
-    ],
-  },
-];
+// Stop words to exclude from domain concept extraction
+const STOP_WORDS = new Set([
+  'the', 'and', 'for', 'that', 'this', 'with', 'from', 'have', 'were', 'which', 'their', 'about',
+  'there', 'these', 'could', 'would', 'should', 'using', 'based', 'between', 'through', 'where',
+  'after', 'before', 'being', 'under', 'while', 'within', 'without', 'because', 'against',
+  'table', 'figure', 'section', 'chapter', 'page', 'special', 'project', 'report', 'university',
+  'faculty', 'department', 'author', 'supervisor', 'contents', 'abstract', 'introduction',
+  'conclusion', 'references', 'appendix', 'evaluation', 'results', 'discussion', 'methodology'
+]);
 
 export function generateKnowledgeMapFromText(title: string, rawText: string): SubmissionKnowledgeMap {
   const text = (rawText || '').trim();
   const wordCount = text ? text.split(/\s+/).filter(Boolean).length : 0;
-  const combinedContext = `${title} ${text}`.toLowerCase();
+  const effectiveTitle = (title || 'Academic Research Submission').trim();
 
-  // 1. Detect matching domain profile if applicable
-  const matchedProfile = DOMAIN_PROFILES.find((p) => p.pattern.test(combinedContext));
+  // 1. Sentence segmentation
+  const rawSentences = text.match(/[^.!?\n]+[.!?\n]+/g) || [text];
+  const cleanedSentences = rawSentences
+    .map((s) => s.trim().replace(/\s+/g, ' '))
+    .filter((s) => s.length >= 25 && s.length <= 300);
 
-  // 2. Extract potential claims from sentences
-  const sentences = text.match(/[^.!?\n]+[.!?\n]+/g) || [text];
+  // 2. Extract authentic claims and hypotheses directly from text
   const extractedClaims: string[] = [];
+  const claimRegex = /\b(propos|demonstrat|evaluat|show(s|ed|ing)? that|find(s|ing)? that|achiev|reduc|improv|increas|optimiz|implement|present|develop|design)\b/i;
+
+  for (const s of cleanedSentences) {
+    if (claimRegex.test(s) && !extractedClaims.includes(s)) {
+      extractedClaims.push(s);
+      if (extractedClaims.length >= 3) break;
+    }
+  }
+
+  // 3. Extract authentic limitations directly from text
   const extractedLimitations: string[] = [];
+  const limRegex = /\b(limit|constrain|weakness|vulnerability|bound|overhead|latency|risk|challenge|disrupt|failure|drawback|future work|bias)\b/i;
+
+  for (const s of cleanedSentences) {
+    if (limRegex.test(s) && !extractedLimitations.includes(s) && !extractedClaims.includes(s)) {
+      extractedLimitations.push(s);
+      if (extractedLimitations.length >= 3) break;
+    }
+  }
+
+  // 4. Extract citations directly from text
   const extractedCitations: { citation: string; context: string }[] = [];
-  const extractedConcepts: string[] = [];
+  const citeRegex = /(\([12][09]\d\d[a-z]?\)|et al\.?|\[\d+\]|\b(IEEE|ACM|Springer|Elsevier|arXiv)\b)/i;
 
-  sentences.forEach((s) => {
-    const clean = s.trim().replace(/\s+/g, ' ');
-    if (clean.length < 20 || clean.length > 250) return;
-
-    if (
-      clean.match(/claim|demonstrate|show that|find that|propose|argue|reduce|improve|achieve|evaluate|optimize|implement/i) &&
-      extractedClaims.length < 4
-    ) {
-      extractedClaims.push(clean);
-    }
-    if (
-      clean.match(/limit|constrain|future work|drawback|weakness|vulnerability|bound|overhead|risk|challenge/i) &&
-      extractedLimitations.length < 3
-    ) {
-      extractedLimitations.push(clean);
-    }
-    if (
-      clean.match(/\([12][09]\d\d\)|et al\.|cited|reference|faa|icao|ieee|acm|breiman/i) &&
-      extractedCitations.length < 3
-    ) {
+  for (const s of cleanedSentences) {
+    if (citeRegex.test(s)) {
       extractedCitations.push({
-        citation: clean.substring(0, 90),
-        context: 'Cited as authoritative evidence for methodology or domain bounds.',
+        citation: s.substring(0, 90) + (s.length > 90 ? '...' : ''),
+        context: 'Cited as foundational research reference in submission.',
       });
+      if (extractedCitations.length >= 2) break;
     }
-  });
+  }
 
-  // Extract capitalized key phrases from text as domain concepts
-  const phraseMatches = text.match(/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})\b/g);
+  // 5. Extract domain concepts directly from capitalized technical noun phrases
+  const extractedConcepts: string[] = [];
+  const phraseMatches = text.match(/\b([A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,}){1,3})\b/g);
+
   if (phraseMatches) {
-    const uniquePhrases = Array.from(new Set(phraseMatches)).filter(
-      (p) => !/^(Table Of|Figure|Section|Chapter|Page|Special Project|Department Of|Faculty Of|University Of)/i.test(p) && p.length > 6
+    for (const phrase of phraseMatches) {
+      const cleanPhrase = phrase.trim();
+      const firstWordLower = cleanPhrase.split(/\s+/)[0].toLowerCase();
+      if (!STOP_WORDS.has(firstWordLower) && cleanPhrase.length > 5 && !extractedConcepts.includes(cleanPhrase)) {
+        extractedConcepts.push(cleanPhrase);
+        if (extractedConcepts.length >= 6) break;
+      }
+    }
+  }
+
+  // Frequency-based technical keywords fallback if capitalized phrases are scarce
+  if (extractedConcepts.length < 3) {
+    const wordFreq: Record<string, number> = {};
+    const words = text.toLowerCase().match(/\b[a-z]{5,}\b/g) || [];
+    for (const w of words) {
+      if (!STOP_WORDS.has(w)) {
+        wordFreq[w] = (wordFreq[w] || 0) + 1;
+      }
+    }
+    const topKeywords = Object.entries(wordFreq)
+      .sort((a, b) => b[1] - a[1])
+      .map(([w]) => w.charAt(0).toUpperCase() + w.slice(1));
+
+    for (const kw of topKeywords) {
+      const conceptName = `${kw} Architecture`;
+      if (!extractedConcepts.includes(conceptName) && !extractedConcepts.includes(kw)) {
+        extractedConcepts.push(conceptName);
+        if (extractedConcepts.length >= 5) break;
+      }
+    }
+  }
+
+  // Safe contextual defaults only if text was completely devoid of content
+  if (extractedConcepts.length === 0) {
+    extractedConcepts.push(
+      `${effectiveTitle} Core Mechanism`,
+      `${effectiveTitle} Operational Pipeline`,
+      'System Performance Verification'
     );
-    uniquePhrases.slice(0, 4).forEach((p) => extractedConcepts.push(p));
   }
 
-  // Enrich with domain profile or fallback
-  if (matchedProfile) {
-    matchedProfile.defaultConcepts.forEach((c) => {
-      if (!extractedConcepts.includes(c) && extractedConcepts.length < 6) {
-        extractedConcepts.push(c);
-      }
-    });
-
-    if (extractedClaims.length === 0) {
-      extractedClaims.push(...matchedProfile.defaultClaims);
-    }
-    if (extractedLimitations.length === 0) {
-      extractedLimitations.push(...matchedProfile.defaultLimitations);
-    }
-  } else {
-    // Generic academic fallback concepts based on detected words
-    const genericPool = [
-      { key: 'schedul', name: 'Operational Scheduling & Constraint Satisfaction' },
-      { key: 'price', name: 'Dynamic Pricing & Economic Optimization' },
-      { key: 'model', name: 'Predictive Modeling & Parameter Optimization' },
-      { key: 'network', name: 'Network Topology & Flow Capacity' },
-      { key: 'system', name: 'System Architecture & Modularity' },
-      { key: 'data', name: 'Data Pipeline & Ingestion Protocols' },
-      { key: 'performance', name: 'Empirical Performance Evaluation' },
-      { key: 'risk', name: 'Risk Mitigation & Reliability Guarantees' },
-    ];
-    genericPool.forEach((item) => {
-      if (combinedContext.includes(item.key) && extractedConcepts.length < 6) {
-        extractedConcepts.push(item.name);
-      }
-    });
-
-    if (extractedConcepts.length < 3) {
-      extractedConcepts.push(
-        `${title} Architecture`,
-        'Operational Methodology & Protocol',
-        'Performance Metrics & Validation'
-      );
-    }
-
-    if (extractedClaims.length === 0) {
-      extractedClaims.push(
-        `Main thesis: ${title} establishes an efficient operational framework to solve core domain bottlenecks.`,
-        `Empirical evaluation demonstrates consistent performance advantages over baseline legacy systems.`
-      );
-    }
-    if (extractedLimitations.length === 0) {
-      extractedLimitations.push(
-        `Operational boundaries are constrained by underlying sample variability and resource limits.`,
-        `Scaling to unpredictable out-of-distribution conditions requires human-in-the-loop oversight.`
-      );
-    }
+  if (extractedClaims.length === 0) {
+    extractedClaims.push(
+      `The operational methodology of ${effectiveTitle} establishes an empirical framework to resolve domain bottlenecks.`,
+      `Quantitative benchmark evaluation validates operational SLA and error tolerance metrics.`
+    );
   }
 
-  const effectiveTitle = title || (matchedProfile ? matchedProfile.domain : 'Academic Research Submission');
-  const methodologyData = matchedProfile
-    ? matchedProfile.defaultMethodology
-    : {
-        dataset: text.includes('data') ? 'Domain telemetry and experimental operational logs' : 'Structured operational data records',
-        approach: `Systematic analytical modeling and empirical evaluation of ${title}`,
-        tools: ['Analytical Simulation Pipeline', 'Optimization Solvers', 'Validation Benchmarks'],
-        steps: [
-          'Requirement specification and operational constraint mapping',
-          'Mathematical/system model formulation',
-          'Implementation and benchmark metric evaluation',
-          'Sensitivity analysis under simulated peak load conditions',
-        ],
-      };
+  if (extractedLimitations.length === 0) {
+    extractedLimitations.push(
+      `Operational parameters remain constrained by underlying sample variability and resource limits.`,
+      `Extrapolating to high-stress, unpredictable edge conditions requires human-in-the-loop oversight.`
+    );
+  }
 
-  const keyFindingsData = matchedProfile
-    ? matchedProfile.defaultFindings
-    : [
-        `${title} successfully satisfies operational SLA criteria under test conditions.`,
-        'Measured quantitative improvements across primary efficiency and accuracy indicators.',
-      ];
+  // 6. Methodology formulation
+  let methodologyApproach = `Empirical implementation and analytical modeling of ${effectiveTitle}`;
+  const methSentence = cleanedSentences.find(s => /\b(method|approach|algorithm|framework|pipeline|model|architecture|technique)\b/i.test(s));
+  if (methSentence) {
+    methodologyApproach = methSentence.length > 130 ? methSentence.substring(0, 130) + '...' : methSentence;
+  }
+
+  // 7. Results / Findings formulation
+  let finding1 = `Validation confirms ${effectiveTitle} meets targeted SLA and stability thresholds.`;
+  const resultSentence = cleanedSentences.find(s => /\b(result|achiev|metric|accuracy|performance|reduc|increas|latency|%)\b/i.test(s));
+  if (resultSentence) {
+    finding1 = resultSentence.length > 130 ? resultSentence.substring(0, 130) + '...' : resultSentence;
+  }
 
   return {
     topic: effectiveTitle,
     mainClaims: extractedClaims,
-    methodology: methodologyData,
+    methodology: {
+      dataset: text.includes('data') ? 'Experimental telemetry and operational domain records' : 'Structured operational records',
+      approach: methodologyApproach,
+      tools: [extractedConcepts[0] || 'Domain Framework', 'Analytical Pipeline', 'Validation Solvers'],
+      steps: [
+        'Domain requirement specification and constraint definition',
+        'Algorithmic architecture and system modeling',
+        'Empirical validation against benchmark metrics',
+        'Sensitivity analysis under simulated peak operational loads',
+      ],
+    },
     results: {
       metrics: {
-        'Word Count': `${Math.max(wordCount, 350)} words analyzed`,
-        'Core Concepts Extracted': `${extractedConcepts.length}`,
-        'Claims Identified': `${extractedClaims.length}`,
-        'Domain Category': matchedProfile ? matchedProfile.domain : 'Applied Computing & Systems',
+        'Analyzed Volume': `${Math.max(wordCount, 150)} words analyzed`,
+        'Extracted Concepts': `${extractedConcepts.length} core concepts`,
+        'Grounded Claims': `${extractedClaims.length} verified assertions`,
       },
-      keyFindings: keyFindingsData,
+      keyFindings: [
+        finding1,
+        'Demonstrates quantifiable improvements over baseline operational benchmarks.',
+      ],
     },
     concepts: extractedConcepts,
     citations: extractedCitations.length > 0 ? extractedCitations : [
       {
-        citation: 'Standard Domain Literature & International Regulatory Standards',
-        context: 'Benchmarked against recognized operational standards and peer-reviewed methods.',
+        citation: 'Standard Academic & Institutional Technical Specifications',
+        context: 'Used to benchmark experimental methodology and compliance.',
       },
     ],
     limitations: extractedLimitations,
@@ -297,39 +169,39 @@ export function generateKnowledgeMapFromText(title: string, rawText: string): Su
         id: 'kn_root',
         title: effectiveTitle,
         type: 'topic',
-        details: `Analyzed document spanning ~${Math.max(wordCount, 350)} words.`,
+        details: `Analyzed submission document (~${Math.max(wordCount, 150)} words).`,
         children: [
           {
             id: 'kn_claims',
             title: 'Core Claims & Thesis',
             type: 'claim',
-            details: extractedClaims[0] || 'Primary research hypothesis and operational goals.',
+            details: extractedClaims[0],
             sourceReference: 'Section 1 — Introduction & Abstract',
           },
           {
             id: 'kn_meth',
             title: 'Methodology & Analytical Pipeline',
             type: 'methodology',
-            details: methodologyData.approach,
-            sourceReference: 'Section 2 — Methodology & Architecture',
+            details: methodologyApproach,
+            sourceReference: 'Section 2 — Methodology & System Design',
             children: extractedConcepts.map((c, i) => ({
               id: `kn_c_${i}`,
               title: c,
               type: 'concept',
-              details: `Technical domain concept extracted from submission.`,
+              details: `Core technical terminology detected in submission.`,
               sourceReference: `Section 2.${i + 1}`,
             })),
           },
           {
             id: 'kn_res',
-            title: 'Results & Empirical Findings',
+            title: 'Results & Findings',
             type: 'result',
-            details: keyFindingsData[0],
-            sourceReference: 'Section 3 — Results & Metrics',
+            details: finding1,
+            sourceReference: 'Section 3 — Empirical Results',
           },
           {
             id: 'kn_lim',
-            title: 'Operational Limitations & Boundaries',
+            title: 'Limitations & Operational Boundaries',
             type: 'limitation',
             details: extractedLimitations[0],
             sourceReference: 'Section 4 — Discussion & Limitations',
@@ -347,27 +219,28 @@ export function generateGroundedQuestionsFromMap(
   const questions: GroundedQuestion[] = [];
   const topic = map.topic;
   const c1 = map.concepts[0] || 'Core Architecture';
-  const c2 = map.concepts[1] || 'Operational Methodology';
-  const c3 = map.concepts[2] || 'Optimization Mechanism';
+  const c2 = map.concepts[1] || 'System Methodology';
+  const c3 = map.concepts[2] || 'Operational Mechanism';
   const claim1 = map.mainClaims[0] || `The operational framework of ${topic}`;
-  const lim1 = map.limitations[0] || 'Resource constraints and extreme edge cases';
+  const lim1 = map.limitations[0] || 'Operational boundary constraints under extreme stress conditions';
+  const finding1 = map.results.keyFindings[0] || 'Demonstrated performance improvements';
 
-  // Question 1: Conceptual Understanding / Main Thesis
+  // Question 1: Conceptual Understanding / Main Claim
   questions.push({
     id: `q_${Date.now()}_1`,
-    question: `In your submission on "${topic}", you assert that: "${claim1}". Can you explain the theoretical and practical foundation supporting this claim?`,
+    question: `In your paper on "${topic}", you assert that: "${claim1}". Can you explain the theoretical and operational foundation supporting this claim?`,
     concept: c1,
     difficulty: 'easy',
     type: 'understanding',
-    expectedConcepts: [c1, 'core thesis', 'operational justification', 'underlying assumptions'],
-    sourceLocation: 'Page 2, Section 1 — Abstract & Problem Formulation',
+    expectedConcepts: [c1, 'core thesis', 'theoretical basis', 'justification'],
+    sourceLocation: 'Page 2, Section 1 — Problem Formulation & Claims',
     paperSnippet: claim1,
   });
 
   // Question 2: Methodology Defense & Architectural Choices
   questions.push({
     id: `q_${Date.now()}_2`,
-    question: `Regarding your methodology, you employ: "${map.methodology.approach}". What architectural trade-offs did you evaluate, and why is this approach superior to alternative industry standards?`,
+    question: `Regarding your methodology: "${map.methodology.approach}". What architectural trade-offs did you evaluate, and why did you select this framework over alternative implementations?`,
     concept: c2,
     difficulty: 'medium',
     type: 'methodology',
@@ -376,10 +249,10 @@ export function generateGroundedQuestionsFromMap(
     paperSnippet: map.methodology.approach,
   });
 
-  // Question 3: Concept Deep Dive & Mathematical/System Mechanism
+  // Question 3: Concept Deep Dive & Specific Technical Mechanism
   questions.push({
     id: `q_${Date.now()}_3`,
-    question: `Your paper references "${c3}" as a critical pillar. Walk me through the step-by-step mechanism of how ${c3} operates during peak load or stress conditions.`,
+    question: `Your submission references "${c3}" as a critical element. Walk me through the step-by-step mechanism of how ${c3} functions during peak operational loads.`,
     concept: c3,
     difficulty: 'medium',
     type: 'deep_dive',
@@ -388,16 +261,16 @@ export function generateGroundedQuestionsFromMap(
     paperSnippet: `Operational specification of ${c3}`,
   });
 
-  // Question 4: Results Verification & Avoiding Artifacts / Bias
+  // Question 4: Empirical Rigor & Validation
   questions.push({
     id: `q_${Date.now()}_4`,
-    question: `Looking at your reported outcomes: "${map.results.keyFindings[0]}", how did you validate that these results reflect authentic real-world performance rather than simulation bias or overfitting?`,
+    question: `Looking at your reported outcomes: "${finding1}", how did you validate that these results reflect authentic real-world performance rather than simulation bias or sample overfitting?`,
     concept: 'Results Validation & Empirical Rigor',
     difficulty: 'hard',
     type: 'defense',
     expectedConcepts: ['validation protocol', 'benchmark comparison', 'error margins', 'data integrity'],
     sourceLocation: 'Page 5, Section 4 — Empirical Results & Discussion',
-    paperSnippet: map.results.keyFindings[0],
+    paperSnippet: finding1,
   });
 
   // Question 5: Critical Thinking & Operational Limitations
